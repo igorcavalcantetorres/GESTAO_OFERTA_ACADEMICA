@@ -331,11 +331,32 @@
             }
         }
 
-        // Tenta carregar automaticamente ao abrir
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFromLocalStorage();
-            // Abre por padrão a aba de Consulta Geral (não precisa de senha)
-            executeSwitchTab('geral');
+      // Tenta carregar automaticamente ao abrir
+        document.addEventListener('DOMContentLoaded', async () => {
+            const savedBase64 = localStorage.getItem(STORAGE_KEY);
+            
+            if (savedBase64) {
+                // Se o usuário (admin) já tem dados modificados salvos no navegador, carrega eles
+                loadFromLocalStorage();
+                executeSwitchTab('geral');
+            } else {
+                // Se for um usuário novo (navegador limpo), baixa a planilha padrão do servidor/GitHub
+                try {
+                    const response = await fetch('./dataset.xlsx');
+                    if (!response.ok) throw new Error("Planilha base não encontrada no servidor.");
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const data = new Uint8Array(arrayBuffer);
+                    const wb = XLSX.read(data, { type: 'array' });
+                    
+                    // Processa os dados apenas para leitura, sem salvar no cache local do professor
+                    processWorkbook(wb, false);
+                    executeSwitchTab('geral');
+                } catch (error) {
+                    console.error("Erro ao carregar a base de dados do GitHub:", error);
+                    executeSwitchTab('geral');
+                }
+            }
         });
 
         // ================= NAVEGAÇÃO =================
