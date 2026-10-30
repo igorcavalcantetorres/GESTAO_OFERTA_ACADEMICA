@@ -332,8 +332,33 @@
         }
 
         // Tenta carregar automaticamente ao abrir
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFromLocalStorage();
+     document.addEventListener('DOMContentLoaded', async () => {
+            const savedBase64 = localStorage.getItem(STORAGE_KEY);
+            if (savedBase64) {
+                // Carrega os dados locais caso o administrador já tenha feito edições no seu navegador
+                try {
+                    const wb = XLSX.read(savedBase64, { type: 'base64' });
+                    processWorkbook(wb, false);
+                    document.getElementById('btn-clear-data').classList.remove('hidden');
+                } catch (e) {
+                    console.error("Erro ao ler do localStorage", e);
+                }
+            } else {
+                // Se for um novo visitante (como um professor), baixa o arquivo oficial dataset.xlsx do GitHub
+                try {
+                    const response = await fetch('./dataset.xlsx');
+                    if (response.ok) {
+                        const arrayBuffer = await response.arrayBuffer();
+                        const data = new Uint8Array(arrayBuffer);
+                        const wb = XLSX.read(data, { type: 'array' });
+                        processWorkbook(wb, false);
+                    } else {
+                        console.error("A planilha dataset.xlsx não foi encontrada no repositório.");
+                    }
+                } catch (error) {
+                    console.error("Erro na conexão ao tentar baixar a planilha:", error);
+                }
+            }
             // Abre por padrão a aba de Consulta Geral (não precisa de senha)
             executeSwitchTab('geral');
         });
