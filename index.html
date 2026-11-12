@@ -22,12 +22,30 @@
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Print Specific Styles */
+        @media print {
+            body { background: white; margin: 0; padding: 0; color: black; font-size: 11px; }
+            #main-header, nav, #upload-section, .no-print-controls { display: none !important; }
+            #view-admin, #admin-grid-container { display: block !important; }
+            .print-hidden { display: none !important; }
+            
+            #print-container { display: block !important; width: 100%; }
+            .print-page-break { page-break-after: always; margin-bottom: 30px; }
+            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
+            .print-table th, .print-table td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+            .print-table th { background-color: #f3f4f6 !important; font-weight: bold; }
+            
+            /* Remove shadows, borders, etc for clean printing */
+            .shadow-sm, .shadow-lg, .rounded-2xl { box-shadow: none !important; border-radius: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
     <!-- Header Navigation -->
-    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-40">
+    <header id="main-header" class="bg-indigo-900 text-white shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,7 +58,6 @@
             </div>
             
             <nav class="flex space-x-1 bg-indigo-950 p-1.5 rounded-lg overflow-x-auto max-w-full">
-                <!-- Alterado para invocar a verificação de senha -->
                 <button onclick="attemptAdminAccess()" id="tab-admin" class="px-5 py-2 rounded-md text-sm font-semibold transition-colors text-indigo-200 hover:text-white hover:bg-indigo-800 whitespace-nowrap flex items-center">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     Administração
@@ -55,7 +72,10 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="main-content-area">
+
+        <!-- Area de Impressão Global (oculta na tela) -->
+        <div id="print-container" class="hidden"></div>
 
         <!-- ================= ABA ADMIN ================= -->
         <section id="view-admin" class="hidden fade-in space-y-6">
@@ -84,22 +104,28 @@
                 </div>
             </section>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row justify-between items-center gap-4 no-print-controls">
                 <div class="flex items-center gap-4 w-full md:w-auto">
                     <label class="font-bold text-slate-700 whitespace-nowrap"> Editar Semestre:</label>
                     <select id="admin-grade-select" onchange="renderAdminGrid()" class="block w-full md:w-64 pl-3 pr-10 py-2.5 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg shadow-sm border bg-slate-50 font-medium">
                         <!-- Preenchido via JS -->
                     </select>
                 </div>
-                <button onclick="exportData()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg shadow flex justify-center items-center transition-colors font-bold">
-                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                    </svg>
-                    Exportar Planilha Modificada
-                </button>
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <button onclick="triggerPrintAll()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-lg shadow flex justify-center items-center transition-colors font-bold">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z"></path></svg>
+                        Imprimir Todas as Grades
+                    </button>
+                    <button onclick="exportData()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg shadow flex justify-center items-center transition-colors font-bold">
+                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
+                        Exportar Planilha Modificada
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-hidden">
                 <div class="table-container overflow-x-auto w-full" id="admin-grid-container">
                     <div class="p-12 text-center text-slate-500 font-medium">Importe a base de dados acima para começar a editar as grades.</div>
                 </div>
@@ -121,7 +147,7 @@
             </div>
 
             <div id="prof-view-container" class="hidden space-y-6">
-                <!-- Resumo de Carga Horária (Separado por Cursos) -->
+                <!-- Resumo de Carga Horária -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 bg-indigo-50/50 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800 flex items-center">
@@ -150,6 +176,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Dia</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Horário</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Disciplina</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Turma / Sala / Vagas</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Cursos (Compartilhados)</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Grade/Semestre</th>
                                 </tr>
@@ -217,7 +244,6 @@
                     </select>
                 </div>
 
-                <!-- Nova seção de Cursos Compartilhados -->
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2">Compartilhamento de Cursos</label>
                     <div class="grid grid-cols-2 gap-3 text-sm bg-slate-50 p-3 border border-slate-200 rounded-xl">
@@ -306,7 +332,8 @@
         let gradesData = {};
         let dictProfessores = {};
         let listDisciplinas = [];
-        let dictDisciplinasCH = {};
+        let dictDisciplinasMeta = {}; // Armazena { CH, Codigo, Turma, Sala, Vagas } por nome
+        let sheetListForPrint = [];
         const DAY_ROW_SEARCH = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO", "SABADO"];
 
         // ================= PERSISTÊNCIA (LOCALSTORAGE) =================
@@ -402,7 +429,7 @@
             if (tabId === 'geral') renderGeralGrid();
         }
 
-        // ================= PARSERS ATUALIZADOS PARA CURSOS =================
+        // ================= PARSERS =================
         function normalizeDiscName(name) {
             if (!name) return "";
             return String(name)
@@ -492,8 +519,8 @@
             gradesData = {};
             dictProfessores = {};
             listDisciplinas = [];
-            dictDisciplinasCH = {};
-            let gradeSheetsList = [];
+            dictDisciplinasMeta = {}; 
+            sheetListForPrint = [];
 
             if (originalWorkbook.Sheets["PROFESSORES"]) {
                 const profAoA = XLSX.utils.sheet_to_json(originalWorkbook.Sheets["PROFESSORES"]);
@@ -514,18 +541,33 @@
                     const keys = Object.keys(d);
                     const nomeKey = keys.find(k => k.toUpperCase().includes("NOME") || k.toUpperCase().includes("DISCIPLINA"));
                     const chKey = keys.find(k => k.toUpperCase() === "HORA_SEMANAL" || k.toUpperCase().includes("HORA_SEMANAL") || k.toUpperCase().includes("HORA") || k.toUpperCase().includes("CH") || k.toUpperCase().includes("CARGA"));
+                    const codKey = keys.find(k => k.toUpperCase() === "CODIGO" || k.toUpperCase() === "CÓDIGO");
+                    const turmaKey = keys.find(k => k.toUpperCase() === "TURMA");
+                    const salaKey = keys.find(k => k.toUpperCase() === "SALA");
+                    const vagasKey = keys.find(k => k.toUpperCase() === "VAGAS");
                     
                     const nameVal = nomeKey ? d[nomeKey] : Object.values(d)[0];
                     const chVal = chKey ? d[chKey] : (Object.values(d).find(v => !isNaN(v)) || 0);
+                    const codVal = codKey ? d[codKey] : "N/D";
+                    const turmaVal = turmaKey ? d[turmaKey] : "N/D";
+                    const salaVal = salaKey ? d[salaKey] : "N/D";
+                    const vagasVal = vagasKey ? d[vagasKey] : "N/D";
 
                     if(nameVal) {
                         listDisciplinas.push(String(nameVal));
                         const normName = normalizeDiscName(nameVal);
-                        dictDisciplinasCH[normName] = Number(chVal) || 0;
+                        dictDisciplinasMeta[normName] = {
+                            ch: Number(chVal) || 0,
+                            codigo: String(codVal).trim(),
+                            turma: String(turmaVal).trim(),
+                            sala: String(salaVal).trim(),
+                            vagas: String(vagasVal).trim()
+                        };
                     }
                 });
             }
 
+            let gradeSheetsList = [];
             originalWorkbook.SheetNames.forEach(sheetName => {
                 const upperName = sheetName.toUpperCase();
                 if (!upperName.includes("PROF") && !upperName.includes("DISC")) {
@@ -538,6 +580,8 @@
                     }
                 }
             });
+
+            sheetListForPrint = gradeSheetsList;
 
             if (gradeSheetsList.length === 0) {
                 if(isNewUpload) showErrorModal('Nenhuma aba de GRADE válida encontrada com dias da semana nas colunas superiores.');
@@ -583,7 +627,7 @@
         }
 
         // ================= CONSTRUTOR DE TABELAS (GRID) =================
-        function buildGridHTML(sheetName, isInteractive) {
+        function buildGridHTML(sheetName, isInteractive, isPrintMode = false) {
             const data = gradesData[sheetName];
             if (!data) return '';
 
@@ -592,26 +636,56 @@
             const timeColIdx = data.meta.timeColIdx;
             const daysRow = aoa[dayRowIdx];
 
-            let html = '<table class="min-w-full divide-y divide-slate-200 border-b border-slate-200">';
+            // Verifica se há alguma célula preenchida nesta grade. Se estiver vazia, retorna '' (oculta na impressão)
+            if (isPrintMode) {
+                let hasData = false;
+                for (let r = dayRowIdx + 1; r < aoa.length; r++) {
+                    const row = aoa[r];
+                    if (!row || !row[timeColIdx]) continue;
+                    for (let c = timeColIdx + 1; c < daysRow.length; c++) {
+                        if (row[c] && String(row[c]).trim() !== "") {
+                            hasData = true;
+                            break;
+                        }
+                    }
+                    if(hasData) break;
+                }
+                if (!hasData) return ''; // Não imprime tabelas vazias
+            }
+
+            let html = '';
             
-            html += '<thead class="bg-slate-100/80"><tr>';
+            if (isPrintMode) {
+                html += `<div class="print-page-break"><h2 style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 10px; color: #1e3a8a; text-transform: uppercase;">Grade: ${sheetName}</h2>`;
+                html += `<table class="print-table"><thead><tr>`;
+            } else {
+                html += '<table class="min-w-full divide-y divide-slate-200 border-b border-slate-200">';
+                html += '<thead class="bg-slate-100/80"><tr>';
+            }
+            
             for (let c = timeColIdx; c < daysRow.length; c++) {
                 const cellVal = daysRow[c] || (c === timeColIdx ? 'HORÁRIO' : '');
-                const isFirst = c === timeColIdx;
-                html += `<th class="px-4 py-3 text-center text-xs font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 ${isFirst ? 'w-32 bg-slate-200/50 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0]' : 'min-w-[160px]'}">${cellVal}</th>`;
+                if (isPrintMode) {
+                    html += `<th>${cellVal}</th>`;
+                } else {
+                    const isFirst = c === timeColIdx;
+                    html += `<th class="px-4 py-3 text-center text-xs font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 ${isFirst ? 'w-32 bg-slate-200/50 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0]' : 'min-w-[160px]'}">${cellVal}</th>`;
+                }
             }
-            html += '</tr></thead><tbody class="bg-white divide-y divide-slate-200">';
+            html += isPrintMode ? '</tr></thead><tbody>' : '</tr></thead><tbody class="bg-white divide-y divide-slate-200">';
             
             for (let r = dayRowIdx + 1; r < aoa.length; r++) {
                 const row = aoa[r];
                 if (!row || !row[timeColIdx]) continue; 
 
                 const timeStr = row[timeColIdx];
-                html += '<tr class="hover:bg-slate-50 transition-colors group">';
+                html += isPrintMode ? '<tr>' : '<tr class="hover:bg-slate-50 transition-colors group">';
                 
                 for (let c = timeColIdx; c < daysRow.length; c++) {
                     if (c === timeColIdx) {
-                        html += `<td class="px-4 py-4 text-center whitespace-nowrap text-sm font-bold text-slate-700 bg-slate-50 border-r border-slate-200 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0] group-hover:bg-slate-100">${timeStr}</td>`;
+                        html += isPrintMode 
+                            ? `<td><strong>${timeStr}</strong></td>` 
+                            : `<td class="px-4 py-4 text-center whitespace-nowrap text-sm font-bold text-slate-700 bg-slate-50 border-r border-slate-200 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0] group-hover:bg-slate-100">${timeStr}</td>`;
                     } else {
                         const cellVal = row[c] || '';
                         const parsed = parseGradeCell(cellVal);
@@ -620,33 +694,49 @@
 
                         let content = '';
                         if (parsed.disc) {
+                            const normDisc = normalizeDiscName(parsed.disc);
+                            const metaData = dictDisciplinasMeta[normDisc] || { codigo: 'N/D', turma: 'N/D', sala: 'N/D', vagas: 'N/D' };
+
                             let cursosTags = parsed.cursos.length > 0 
                                 ? `<div class="mt-1 flex flex-wrap justify-center gap-1">` + 
-                                  parsed.cursos.map(cur => `<span class="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded leading-none whitespace-nowrap">${cur}</span>`).join('') 
+                                  parsed.cursos.map(cur => `<span class="text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded leading-none whitespace-nowrap">${cur}</span>`).join('') 
                                   + `</div>`
                                 : '';
+                            
+                            let metaTags = `<div class="mt-1 flex flex-wrap justify-center gap-1">
+                                <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded" title="Código">Cód: ${metaData.codigo}</span>
+                                <span class="text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1 py-0.5 rounded" title="Turma">T: ${metaData.turma}</span>
+                                <span class="text-[9px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1 py-0.5 rounded" title="Sala">S: ${metaData.sala}</span>
+                                <span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded" title="Vagas">👥 ${metaData.vagas}</span>
+                            </div>`;
 
-                            content = `
-                                <div class="font-bold text-slate-800 text-sm leading-tight">${parsed.disc}</div>
-                                <div class="text-xs text-indigo-600 font-semibold mt-1 bg-indigo-50 inline-block px-1.5 py-0.5 rounded border border-indigo-100 truncate max-w-full" title="${profName}">
-                                    ${parsed.profId ? profName : 'Sem Professor'}
-                                </div>
-                                ${cursosTags}
-                            `;
+                            if (isPrintMode) {
+                                let cursosPrint = parsed.cursos.length > 0 ? `<br><span style="font-size:8px; color:#059669;">[${parsed.cursos.join(', ')}]</span>` : '';
+                                content = `<strong>${parsed.disc}</strong><br><span style="color:#4f46e5;">${parsed.profId ? profName : 'Sem Professor'}</span><br><span style="font-size:8px; color:#6b7280;">Cód: ${metaData.codigo} | T: ${metaData.turma} | Sala: ${metaData.sala} | Vagas: ${metaData.vagas}</span>${cursosPrint}`;
+                            } else {
+                                content = `
+                                    <div class="font-bold text-slate-800 text-sm leading-tight">${parsed.disc}</div>
+                                    <div class="text-xs text-indigo-600 font-semibold mt-1 bg-indigo-50 inline-block px-1.5 py-0.5 rounded border border-indigo-100 truncate max-w-full" title="${profName}">
+                                        ${parsed.profId ? profName : 'Sem Professor'}
+                                    </div>
+                                    ${metaTags}
+                                    ${cursosTags}
+                                `;
+                            }
                         } else {
-                            content = `<div class="text-slate-300 text-xs font-medium italic">—</div>`;
+                            content = isPrintMode ? '' : `<div class="text-slate-300 text-xs font-medium italic">—</div>`;
                         }
 
-                        if (isInteractive) {
+                        if (isInteractive && !isPrintMode) {
                             html += `<td onclick="openEditModal('${sheetName}', ${r}, ${c}, '${dayStr}', '${timeStr}')" class="p-3 align-top border-r border-slate-200 grid-cell text-center relative overflow-hidden">${content}</td>`;
                         } else {
-                            html += `<td class="p-3 align-top border-r border-slate-200 text-center">${content}</td>`;
+                            html += isPrintMode ? `<td>${content}</td>` : `<td class="p-3 align-top border-r border-slate-200 text-center">${content}</td>`;
                         }
                     }
                 }
                 html += '</tr>';
             }
-            html += '</tbody></table>';
+            html += isPrintMode ? '</tbody></table></div>' : '</tbody></table>';
             return html;
         }
 
@@ -666,6 +756,25 @@
                 return;
             }
             document.getElementById('geral-grid-container').innerHTML = buildGridHTML(sheet, false);
+        }
+
+        // ================= IMPRESSÃO DE TODAS AS GRADES =================
+        function triggerPrintAll() {
+            if (sheetListForPrint.length === 0) {
+                alert("Nenhuma grade carregada para impressão.");
+                return;
+            }
+            
+            const printContainer = document.getElementById('print-container');
+            printContainer.innerHTML = '';
+            
+            // Build all grids in print mode
+            sheetListForPrint.forEach(sheetName => {
+                printContainer.innerHTML += buildGridHTML(sheetName, false, true);
+            });
+            
+            // Invoca a janela nativa de impressão do navegador
+            window.print();
         }
 
         // ================= VISÃO DO PROFESSOR =================
@@ -702,6 +811,8 @@
                             count++;
                             const timeStr = row[timeColIdx];
                             const dayStr = daysRow[c];
+                            const normDisc = normalizeDiscName(parsed.disc);
+                            const metaData = dictDisciplinasMeta[normDisc] || { codigo: 'N/D', turma: 'N/D', sala: 'N/D', vagas: 'N/D' };
                             
                             let cursosTags = parsed.cursos.length 
                                 ? parsed.cursos.map(cur => `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded text-xs mr-1 inline-block whitespace-nowrap mb-1">${cur}</span>`).join('') 
@@ -712,6 +823,12 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800 border-r border-slate-100">${dayStr}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-700 border-r border-slate-100">${timeStr}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700 border-r border-slate-100">${parsed.disc}</td>
+                                    <td class="px-6 py-4 text-sm font-medium border-r border-slate-100">
+                                        <div class="text-slate-600">Cód: <span class="font-bold">${metaData.codigo}</span></div>
+                                        <div class="text-blue-700 mt-1">Turma: <span class="font-bold">${metaData.turma}</span></div>
+                                        <div class="text-purple-700 mt-1">Sala: <span class="font-bold">${metaData.sala}</span></div>
+                                        <div class="text-amber-700 mt-1">Vagas: <span class="font-bold">${metaData.vagas}</span></div>
+                                    </td>
                                     <td class="px-6 py-4 text-sm border-r border-slate-100">${cursosTags}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">
                                         <span class="bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200">${sheetName}</span>
@@ -721,7 +838,6 @@
 
                             let cursosParaSomar = parsed.cursos.length > 0 ? parsed.cursos : ['Curso Não Especificado (Geral)'];
                             cursosParaSomar.forEach(curso => {
-                                const normDisc = normalizeDiscName(parsed.disc);
                                 const classKey = `${normDisc}|${sheetName}|${curso}`;
                                 
                                 if (!uniqueClasses[classKey]) {
@@ -730,7 +846,7 @@
                                         normName: normDisc,
                                         grade: sheetName,
                                         curso: curso,
-                                        ch: dictDisciplinasCH[normDisc] || 0
+                                        ch: metaData.ch
                                     };
                                 }
                             });
@@ -740,20 +856,19 @@
             }
 
             if (count === 0) {
-                html = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 font-medium">Nenhuma aula alocada para este professor nas grades carregadas.</td></tr>`;
+                html = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">Nenhuma aula alocada para este professor nas grades carregadas.</td></tr>`;
             }
 
-            // Agrupamento para Resumo com Correção de Carga Horária (Soma 1x)
+            // Agrupamento para Resumo
             let cursosGroups = {};
             let totalCH = 0; 
-            let disciplinasContadasGlobal = new Set(); // Garante soma global única
+            let disciplinasContadasGlobal = new Set(); 
 
             for (let key in uniqueClasses) {
                 const cls = uniqueClasses[key];
                 if (!cursosGroups[cls.curso]) cursosGroups[cls.curso] = [];
                 cursosGroups[cls.curso].push(cls);
 
-                // Soma o Total Geral (Independentemente de quantos cursos a disciplina compartilha, soma só 1x)
                 if (!disciplinasContadasGlobal.has(cls.normName)) {
                     disciplinasContadasGlobal.add(cls.normName);
                     totalCH += cls.ch;
@@ -766,9 +881,8 @@
                 summaryHtml = '<p class="text-sm text-slate-500 text-center py-4">Nenhuma disciplina alocada para exibir resumo.</p>';
             } else {
                 for (let curso in cursosGroups) {
-                    
                     let cursoTotal = 0;
-                    let disciplinasContadasCurso = new Set(); // Garante soma única dentro do subtotal do curso
+                    let disciplinasContadasCurso = new Set();
                     
                     cursosGroups[curso].forEach(cls => {
                         if (!disciplinasContadasCurso.has(cls.normName)) {
@@ -828,7 +942,6 @@
             document.getElementById('edit-disciplina').value = parsed.disc;
             document.getElementById('edit-professor').value = parsed.profId; 
 
-            // Configurar Checkboxes
             document.querySelectorAll('.curso-checkbox').forEach(cb => cb.checked = false);
             if (parsed.cursos && parsed.cursos.length > 0) {
                 document.querySelectorAll('.curso-checkbox').forEach(cb => {
@@ -895,8 +1008,6 @@
             
             const newDisc = document.getElementById('edit-disciplina').value.toUpperCase();
             const newProfId = document.getElementById('edit-professor').value;
-
-            // Extrair cursos marcados
             const cursosSelecionados = Array.from(document.querySelectorAll('.curso-checkbox:checked')).map(cb => cb.value);
 
             const clashMsg = checkForClashes(newProfId, dayStr, timeStr, sheet);
