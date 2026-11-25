@@ -14,7 +14,7 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .grid-cell { transition: all 0.2s; min-height: 4rem; }
+        .grid-cell { transition: all 0.2s; min-height: 4.5rem; }
         .grid-cell:hover { background-color: #f1f5f9; cursor: pointer; border-color: #3b82f6; }
         
         /* Custom scrollbar para tabelas grandes */
@@ -33,7 +33,7 @@
             #print-container { display: block !important; width: 100%; }
             .print-page-break { page-break-after: always; margin-bottom: 30px; }
             .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
-            .print-table th, .print-table td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+            .print-table th, .print-table td { border: 1px solid #ccc; padding: 4px; text-align: center; vertical-align: top; }
             .print-table th { background-color: #f3f4f6 !important; font-weight: bold; }
             
             /* Remove shadows, borders, etc for clean printing */
@@ -53,7 +53,7 @@
                 </svg>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">Gestão de Horários</h1>
-                    <p class="text-xs text-indigo-300">Consulta e Alocação de Grades</p>
+                    <p class="text-xs text-indigo-300">Consulta e Alocação de Grades (9 Cursos)</p>
                 </div>
             </div>
             
@@ -113,7 +113,7 @@
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <button onclick="triggerPrintAll()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-lg shadow flex justify-center items-center transition-colors font-bold">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4h10z"></path></svg>
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         Imprimir Todas as Grades
                     </button>
                     <button onclick="exportData()" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg shadow flex justify-center items-center transition-colors font-bold">
@@ -131,43 +131,78 @@
                 </div>
                 <div class="bg-indigo-50 p-4 border-t border-indigo-100 flex items-center text-sm text-indigo-700 font-medium">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Clique em qualquer célula de horário para alocar ou alterar uma disciplina.
+                    Clique em qualquer célula de horário para alocar uma ou mais disciplinas simultâneas (com códigos e professores distintos).
                 </div>
             </div>
         </section>
 
         <!-- ================= ABA PROFESSOR ================= -->
         <section id="view-professor" class="hidden fade-in space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <label for="prof-select" class="block text-sm font-bold text-slate-700 mb-3">Selecione o Professor:</label>
-                <select id="prof-select" onchange="renderProfessorView()" class="block w-full max-w-lg pl-4 pr-10 py-3 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-xl shadow-sm border bg-slate-50 font-medium">
-                    <option value="">-- Aguardando carregamento de dados --</option>
-                    <!-- Preenchido via JS -->
-                </select>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="w-full max-w-lg">
+                    <label for="prof-select" class="block text-sm font-bold text-slate-700 mb-2">Selecione o Professor:</label>
+                    <select id="prof-select" onchange="renderProfessorView()" class="block w-full pl-4 pr-10 py-3 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-xl shadow-sm border bg-slate-50 font-medium">
+                        <option value="">-- Aguardando carregamento de dados --</option>
+                    </select>
+                </div>
+                <!-- Card de Carga Horária Total do Docente -->
+                <div id="prof-total-badge-box" class="hidden bg-indigo-900 text-white px-6 py-3.5 rounded-xl shadow-md flex items-center gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-indigo-300 font-bold">Carga Horária Total do Docente</p>
+                        <p class="text-[11px] text-indigo-200">Contabilizada 1x por componente único</p>
+                    </div>
+                    <span id="prof-summary-total" class="text-2xl font-black bg-indigo-700 px-4 py-1.5 rounded-lg border border-indigo-500">0h</span>
+                </div>
             </div>
 
             <div id="prof-view-container" class="hidden space-y-6">
-                <!-- Resumo de Carga Horária -->
+                
+                <!-- 1. Carga Horária por Curso -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 bg-indigo-50/50 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            Carga Horária (Agrupada por Curso)
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                            Carga Horária por Curso
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-slate-600">Total (Contabilizado 1x por Disciplina):</span>
-                            <span id="prof-summary-total" class="bg-indigo-600 text-white text-sm font-black px-3 py-1 rounded-full shadow-sm">0h</span>
-                        </div>
+                        <span class="text-xs font-semibold text-slate-500">Soma das CHs vinculadas a cada curso</span>
                     </div>
-                    <div class="p-6 bg-slate-50/50" id="prof-summary-list">
-                        <!-- JS irá inserir blocos separados por curso aqui -->
+                    <div class="p-6 bg-slate-50/50" id="prof-course-summary-grid">
+                        <!-- Cards de total por curso via JS -->
                     </div>
                 </div>
 
+                <!-- 2. Carga Horária por Componente Curricular -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-emerald-50/50 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                            Carga Horária por Componente Curricular
+                        </h3>
+                        <span id="prof-comp-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">0 Componentes</span>
+                    </div>
+                    <div class="overflow-x-auto table-container">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Código</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Componente Curricular</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Curso(s)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Grade / Semestre</th>
+                                    <th class="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Carga Horária</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prof-comp-body" class="bg-white divide-y divide-slate-200">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. Grade Horária Detalhada (Dias e Horários) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-800" id="prof-view-name">Aulas Detalhadas</h3>
-                        <span id="prof-view-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">0 Aulas</span>
+                        <h3 class="text-lg font-bold text-slate-800" id="prof-view-name">Aulas Detalhadas na Semana</h3>
+                        <span id="prof-view-count" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full">0 Horários</span>
                     </div>
                     <div class="overflow-x-auto table-container">
                         <table class="min-w-full divide-y divide-slate-200">
@@ -175,9 +210,9 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Dia</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Horário</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Disciplina</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Código & Componente</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Turma / Sala / Vagas</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Cursos (Compartilhados)</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Cursos</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Grade/Semestre</th>
                                 </tr>
                             </thead>
@@ -210,12 +245,12 @@
 
     <!-- ================= MODAIS ================= -->
     
-    <!-- Modal de Edição -->
-    <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden fade-in border border-slate-200">
-            <div class="px-6 py-5 border-b border-slate-200 bg-indigo-50/50 flex justify-between items-start">
+    <!-- Modal de Edição (Múltiplas Disciplinas no mesmo horário) -->
+    <div id="edit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden fade-in border border-slate-200 flex flex-col max-h-[90vh]">
+            <div class="px-6 py-5 border-b border-slate-200 bg-indigo-50/50 flex justify-between items-start shrink-0">
                 <div>
-                    <h3 class="text-xl font-black text-indigo-950 mb-1" id="edit-modal-title">Alocar Disciplina</h3>
+                    <h3 class="text-xl font-black text-indigo-950 mb-1" id="edit-modal-title">Alocar Disciplinas</h3>
                     <p class="text-sm text-indigo-700 font-medium flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span id="edit-modal-subtitle">Segunda - 07:30</span>
@@ -226,52 +261,26 @@
                 </button>
             </div>
             
-            <div class="px-6 py-6 space-y-4">
+            <div class="px-6 py-5 space-y-4 overflow-y-auto flex-1">
                 <input type="hidden" id="edit-sheet">
                 <input type="hidden" id="edit-row">
                 <input type="hidden" id="edit-col">
                 <input type="hidden" id="edit-day">
                 <input type="hidden" id="edit-time">
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Nome da Disciplina</label>
-                    <input type="text" id="edit-disciplina" placeholder="Ex: CÁLCULO I" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 uppercase font-medium">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Professor Responsável</label>
-                    <select id="edit-professor" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-medium">
-                        <option value="">-- Sem Professor / Livre --</option>
-                    </select>
-                </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Compartilhamento de Cursos</label>
-                    <div class="grid grid-cols-2 gap-3 text-sm bg-slate-50 p-3 border border-slate-200 rounded-xl">
-                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition">
-                            <input type="checkbox" value="Eng. de Energia" class="curso-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                            <span class="font-medium text-slate-700">Eng. de Energia</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition">
-                            <input type="checkbox" value="Eng. Elétrica" class="curso-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                            <span class="font-medium text-slate-700">Eng. Elétrica</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition">
-                            <input type="checkbox" value="Eng. de Agrimensura" class="curso-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                            <span class="font-medium text-slate-700">Eng. Agrimensura</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-100 p-1 rounded transition">
-                            <input type="checkbox" value="Eng. Florestal" class="curso-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                            <span class="font-medium text-slate-700">Eng. Florestal</span>
-                        </label>
-                    </div>
-                </div>
+                <!-- Lista dinâmica de blocos de disciplinas neste horário -->
+                <div id="edit-entries-list" class="space-y-4"></div>
 
+                <button type="button" onclick="addEntryBlock()" class="w-full py-2.5 px-4 border-2 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 rounded-xl font-bold text-sm flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Adicionar Outra Disciplina neste Mesmo Horário
+                </button>
             </div>
             
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
-                <button onclick="clearCell()" class="px-5 py-2.5 text-sm font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-xl transition-colors mr-auto">Limpar Horário</button>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 shrink-0">
+                <button onclick="clearCell()" class="px-5 py-2.5 text-sm font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-xl transition-colors mr-auto">Limpar Tudo</button>
                 <button onclick="closeEditModal()" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
-                <button onclick="saveCellData()" class="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-colors">Salvar Alocação</button>
+                <button onclick="saveCellData()" class="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-colors">Salvar Alocações</button>
             </div>
         </div>
     </div>
@@ -309,6 +318,19 @@
     </div>
 
     <script>
+        // ================= CONFIGURAÇÃO DOS 9 CURSOS =================
+        const CURSOS_DISPONIVEIS = [
+            "Eng. Energia",
+            "Eng. Elétrica",
+            "Eng. Agrimensura",
+            "Eng. Florestal",
+            "Agronomia",
+            "Zootecnia",
+            "Sistemas de Informação",
+            "Agroecologia",
+            "Tecnólogo em Agroecologia"
+        ];
+
         // ================= SENHA DE ADMINISTRAÇÃO =================
         const ADMIN_PASS = "admin";
         let isAdminAuthenticated = false;
@@ -331,34 +353,23 @@
         let originalWorkbook = null;
         let gradesData = {};
         let dictProfessores = {};
-        let listDisciplinas = [];
-        let dictDisciplinasMeta = {}; // Armazena { CH, Codigo, Turma, Sala, Vagas } por nome
+        let listDisciplinasCatalog = []; // [{ codigo, nome, normName, ch, turma, sala, vagas }]
+        let dictDisciplinasByCode = {}; // Chave: CODIGO em maiúsculo -> { codigo, nome, ch, turma, sala, vagas }
+        let dictDisciplinasByName = {}; // Fallback para células antigas sem código explícito
         let sheetListForPrint = [];
         const DAY_ROW_SEARCH = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO", "SABADO"];
 
         // ================= PERSISTÊNCIA (LOCALSTORAGE) =================
         const STORAGE_KEY = 'gestaoHorariosDb';
 
-        function loadFromLocalStorage() {
-            const savedBase64 = localStorage.getItem(STORAGE_KEY);
-            if (savedBase64) {
-                try {
-                    const wb = XLSX.read(savedBase64, { type: 'base64' });
-                    processWorkbook(wb, false);
-                    document.getElementById('btn-clear-data').classList.remove('hidden');
-                } catch (e) {
-                    console.error("Erro ao ler do localStorage", e);
-                    localStorage.removeItem(STORAGE_KEY);
-                }
-            }
-        }
-
         function saveToLocalStorage() {
             try {
                 const newWb = XLSX.utils.book_new();
-                if (originalWorkbook.Sheets["PROFESSORES"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["PROFESSORES"], "PROFESSORES");
-                if (originalWorkbook.Sheets["DISCPLINAS"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCPLINAS"], "DISCPLINAS");
-                else if (originalWorkbook.Sheets["DISCIPLINAS"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCIPLINAS"], "DISCIPLINAS");
+                if (originalWorkbook) {
+                    if (originalWorkbook.Sheets["PROFESSORES"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["PROFESSORES"], "PROFESSORES");
+                    if (originalWorkbook.Sheets["DISCPLINAS"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCPLINAS"], "DISCPLINAS");
+                    else if (originalWorkbook.Sheets["DISCIPLINAS"]) XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCIPLINAS"], "DISCIPLINAS");
+                }
 
                 for (let sheetName in gradesData) {
                     const ws = XLSX.utils.aoa_to_sheet(gradesData[sheetName].aoa);
@@ -429,7 +440,7 @@
             if (tabId === 'geral') renderGeralGrid();
         }
 
-        // ================= PARSERS =================
+        // ================= PARSERS (SUPORTE A CÓDIGO + NOME E MÚLTIPLAS DISCIPLINAS) =================
         function normalizeDiscName(name) {
             if (!name) return "";
             return String(name)
@@ -440,34 +451,111 @@
                 .trim();
         }
 
-        function parseGradeCell(val) {
-            if (!val) return { disc: "", profId: "", cursos: [] };
-            const strVal = String(val).trim();
-            const match = strVal.match(/^(.*?)\s*\(([^)]+)\)(?:\s*\[(.*?)\])?$/);
-            
-            if (match) {
-                return { 
-                    disc: match[1].trim(), 
-                    profId: match[2].trim(),
-                    cursos: match[3] ? match[3].split(',').map(c => c.trim()) : []
-                };
+        // Separa "CODIGO - NOME" caso venha no formato prefixado
+        function extractCodeAndName(rawDiscStr) {
+            const str = (rawDiscStr || "").trim();
+            // Formato esperado: "ENE101 - CÁLCULO I" (código sem espaços contendo letras/números/hífen/ponto)
+            const prefixMatch = str.match(/^([A-Z0-9._-]+)\s*-\s*(.+)$/i);
+            if (prefixMatch) {
+                const candidateCode = prefixMatch[1].trim().toUpperCase();
+                const restName = prefixMatch[2].trim();
+                // Confirma se existe no catálogo de códigos ou parece um código válido (contém número ou tem formato de código)
+                if (dictDisciplinasByCode[candidateCode] || /\d/.test(candidateCode)) {
+                    return { discCode: candidateCode, disc: restName };
+                }
             }
-            return { disc: strVal, profId: "", cursos: [] }; 
+            return { discCode: "", disc: str };
         }
 
-        function formatGradeCell(disc, profId, cursosArr) {
-            disc = disc.trim();
-            profId = profId.trim();
+        // Busca os metadados priorizando o Código da Disciplina, com fallback pelo Nome
+        function resolveDiscMetadata(discCode, discName) {
+            const cleanCode = (discCode || "").trim().toUpperCase();
+            if (cleanCode && dictDisciplinasByCode[cleanCode]) {
+                return dictDisciplinasByCode[cleanCode];
+            }
+            const normName = normalizeDiscName(discName);
+            if (normName && dictDisciplinasByName[normName]) {
+                const found = dictDisciplinasByName[normName];
+                return {
+                    ...found,
+                    codigo: cleanCode || found.codigo
+                };
+            }
+            return {
+                codigo: cleanCode || 'N/D',
+                nome: discName || '',
+                ch: 0,
+                turma: 'N/D',
+                sala: 'N/D',
+                vagas: 'N/D'
+            };
+        }
+
+        // Faz o parse de um único item: "ENE101 - CÁLCULO I (PROF_ID) [Curso 1, Curso 2]"
+        function parseSingleEntry(strVal) {
+            if (!strVal) return { discCode: "", disc: "", profId: "", cursos: [] };
+            const cleanStr = String(strVal).trim();
+            const match = cleanStr.match(/^(.*?)\s*\(([^)]+)\)(?:\s*\[(.*?)\])?$/);
             
+            if (match) {
+                const { discCode, disc } = extractCodeAndName(match[1].trim());
+                return { 
+                    discCode,
+                    disc, 
+                    profId: match[2].trim(),
+                    cursos: match[3] ? match[3].split(',').map(c => c.trim()).filter(Boolean) : []
+                };
+            }
+            const matchNoProf = cleanStr.match(/^(.*?)(?:\s*\[(.*?)\])?$/);
+            if (matchNoProf) {
+                const { discCode, disc } = extractCodeAndName(matchNoProf[1].trim());
+                return {
+                    discCode,
+                    disc,
+                    profId: "",
+                    cursos: matchNoProf[2] ? matchNoProf[2].split(',').map(c => c.trim()).filter(Boolean) : []
+                };
+            }
+            const { discCode, disc } = extractCodeAndName(cleanStr);
+            return { discCode, disc, profId: "", cursos: [] }; 
+        }
+
+        function parseGradeCellList(val) {
+            if (!val) return [];
+            const strVal = String(val).trim();
+            if (!strVal) return [];
+            
+            const parts = strVal.split(/\s*[;\n]\s*/).filter(p => p.trim() !== "");
+            return parts.map(p => parseSingleEntry(p)).filter(item => item.disc || item.profId || item.discCode);
+        }
+
+        function formatSingleEntry(discCode, disc, profId, cursosArr) {
+            discCode = (discCode || "").trim().toUpperCase();
+            disc = (disc || "").trim();
+            profId = (profId || "").trim();
+            
+            let titlePart = "";
+            if (discCode && disc) titlePart = `${discCode} - ${disc}`;
+            else if (disc) titlePart = disc;
+            else if (discCode) titlePart = discCode;
+
             let base = "";
-            if (disc && profId) base = `${disc} (${profId})`;
-            else if (disc) base = disc;
+            if (titlePart && profId) base = `${titlePart} (${profId})`;
+            else if (titlePart) base = titlePart;
             else if (profId) base = `(${profId})`;
             
             if (base && cursosArr && cursosArr.length > 0) {
                 return `${base} [${cursosArr.join(', ')}]`;
             }
             return base;
+        }
+
+        function formatGradeCellList(entriesArr) {
+            if (!entriesArr || entriesArr.length === 0) return "";
+            return entriesArr
+                .map(e => formatSingleEntry(e.discCode, e.disc, e.profId, e.cursos))
+                .filter(Boolean)
+                .join(' ; ');
         }
 
         function findGridMeta(aoa) {
@@ -518,8 +606,9 @@
             originalWorkbook = wb;
             gradesData = {};
             dictProfessores = {};
-            listDisciplinas = [];
-            dictDisciplinasMeta = {}; 
+            listDisciplinasCatalog = [];
+            dictDisciplinasByCode = {};
+            dictDisciplinasByName = {};
             sheetListForPrint = [];
 
             if (originalWorkbook.Sheets["PROFESSORES"]) {
@@ -548,21 +637,32 @@
                     
                     const nameVal = nomeKey ? d[nomeKey] : Object.values(d)[0];
                     const chVal = chKey ? d[chKey] : (Object.values(d).find(v => !isNaN(v)) || 0);
-                    const codVal = codKey ? d[codKey] : "N/D";
-                    const turmaVal = turmaKey ? d[turmaKey] : "N/D";
-                    const salaVal = salaKey ? d[salaKey] : "N/D";
-                    const vagasVal = vagasKey ? d[vagasKey] : "N/D";
+                    const codVal = codKey ? String(d[codKey]).trim().toUpperCase() : "N/D";
+                    const turmaVal = turmaKey ? String(d[turmaKey]).trim() : "N/D";
+                    const salaVal = salaKey ? String(d[salaKey]).trim() : "N/D";
+                    const vagasVal = vagasKey ? String(d[vagasKey]).trim() : "N/D";
 
-                    if(nameVal) {
-                        listDisciplinas.push(String(nameVal));
-                        const normName = normalizeDiscName(nameVal);
-                        dictDisciplinasMeta[normName] = {
+                    if (nameVal) {
+                        const rawName = String(nameVal).trim();
+                        const normName = normalizeDiscName(rawName);
+                        const itemObj = {
+                            codigo: codVal,
+                            nome: rawName,
+                            normName: normName,
                             ch: Number(chVal) || 0,
-                            codigo: String(codVal).trim(),
-                            turma: String(turmaVal).trim(),
-                            sala: String(salaVal).trim(),
-                            vagas: String(vagasVal).trim()
+                            turma: turmaVal,
+                            sala: salaVal,
+                            vagas: vagasVal
                         };
+
+                        listDisciplinasCatalog.push(itemObj);
+
+                        if (codVal && codVal !== "N/D") {
+                            dictDisciplinasByCode[codVal] = itemObj;
+                        }
+                        if (!dictDisciplinasByName[normName]) {
+                            dictDisciplinasByName[normName] = itemObj;
+                        }
                     }
                 });
             }
@@ -598,6 +698,29 @@
             }
         }
 
+        function getSortedProfOptionsHTML(selectedProfId = "") {
+            const profArray = Object.keys(dictProfessores).map(cod => ({ cod, nome: dictProfessores[cod] }));
+            profArray.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            let opts = `<option value="">-- Sem Professor / Livre --</option>`;
+            profArray.forEach(p => {
+                const selected = String(p.cod) === String(selectedProfId) ? 'selected' : '';
+                opts += `<option value="${p.cod}" ${selected}>${p.cod} - ${p.nome}</option>`;
+            });
+            return opts;
+        }
+
+        function getCatalogOptionsHTML(selectedCode = "") {
+            const sorted = [...listDisciplinasCatalog].sort((a, b) => a.nome.localeCompare(b.nome) || a.codigo.localeCompare(b.codigo));
+            let opts = `<option value="">-- Selecionar do Catálogo (Opcional) --</option>`;
+            sorted.forEach(item => {
+                const isSel = selectedCode && item.codigo === selectedCode.toUpperCase() ? 'selected' : '';
+                const turmaInfo = item.turma && item.turma !== 'N/D' ? ` | T:${item.turma}` : '';
+                opts += `<option value="${item.codigo}" data-nome="${item.nome}" ${isSel}>[${item.codigo}] ${item.nome} (${item.ch}h${turmaInfo})</option>`;
+            });
+            return opts;
+        }
+
         function populateSelects(sheets) {
             const adminSelect = document.getElementById('admin-grade-select');
             const geralSelect = document.getElementById('geral-grade-select');
@@ -605,16 +728,12 @@
             geralSelect.innerHTML = '';
             
             sheets.forEach(sheet => {
-                const opt = new Option(sheet, sheet);
-                adminSelect.add(opt);
+                adminSelect.add(new Option(sheet, sheet));
                 geralSelect.add(new Option(sheet, sheet));
             });
 
             const profViewSelect = document.getElementById('prof-select');
-            const editProfSelect = document.getElementById('edit-professor');
-            
             profViewSelect.innerHTML = '<option value="">-- Escolha o Professor --</option>';
-            editProfSelect.innerHTML = '<option value="">-- Sem Professor / Livre --</option>';
             
             const profArray = Object.keys(dictProfessores).map(cod => ({ cod, nome: dictProfessores[cod] }));
             profArray.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -622,7 +741,6 @@
             profArray.forEach(p => {
                 const label = `${p.cod} - ${p.nome}`;
                 profViewSelect.add(new Option(label, p.cod));
-                editProfSelect.add(new Option(label, p.cod));
             });
         }
 
@@ -636,7 +754,6 @@
             const timeColIdx = data.meta.timeColIdx;
             const daysRow = aoa[dayRowIdx];
 
-            // Verifica se há alguma célula preenchida nesta grade. Se estiver vazia, retorna '' (oculta na impressão)
             if (isPrintMode) {
                 let hasData = false;
                 for (let r = dayRowIdx + 1; r < aoa.length; r++) {
@@ -650,7 +767,7 @@
                     }
                     if(hasData) break;
                 }
-                if (!hasData) return ''; // Não imprime tabelas vazias
+                if (!hasData) return ''; 
             }
 
             let html = '';
@@ -669,7 +786,7 @@
                     html += `<th>${cellVal}</th>`;
                 } else {
                     const isFirst = c === timeColIdx;
-                    html += `<th class="px-4 py-3 text-center text-xs font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 ${isFirst ? 'w-32 bg-slate-200/50 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0]' : 'min-w-[160px]'}">${cellVal}</th>`;
+                    html += `<th class="px-4 py-3 text-center text-xs font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 ${isFirst ? 'w-32 bg-slate-200/50 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0]' : 'min-w-[200px]'}">${cellVal}</th>`;
                 }
             }
             html += isPrintMode ? '</tr></thead><tbody>' : '</tr></thead><tbody class="bg-white divide-y divide-slate-200">';
@@ -688,49 +805,57 @@
                             : `<td class="px-4 py-4 text-center whitespace-nowrap text-sm font-bold text-slate-700 bg-slate-50 border-r border-slate-200 sticky left-0 z-10 shadow-[1px_0_0_#e2e8f0] group-hover:bg-slate-100">${timeStr}</td>`;
                     } else {
                         const cellVal = row[c] || '';
-                        const parsed = parseGradeCell(cellVal);
-                        const profName = dictProfessores[parsed.profId] || parsed.profId;
+                        const entries = parseGradeCellList(cellVal);
                         const dayStr = daysRow[c] || `Col_${c}`;
 
                         let content = '';
-                        if (parsed.disc) {
-                            const normDisc = normalizeDiscName(parsed.disc);
-                            const metaData = dictDisciplinasMeta[normDisc] || { codigo: 'N/D', turma: 'N/D', sala: 'N/D', vagas: 'N/D' };
+                        if (entries.length > 0) {
+                            content = entries.map((parsed, idx) => {
+                                const profName = dictProfessores[parsed.profId] || parsed.profId;
+                                const metaData = resolveDiscMetadata(parsed.discCode, parsed.disc);
+                                const displayCode = parsed.discCode || metaData.codigo;
 
-                            let cursosTags = parsed.cursos.length > 0 
-                                ? `<div class="mt-1 flex flex-wrap justify-center gap-1">` + 
-                                  parsed.cursos.map(cur => `<span class="text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.5 rounded leading-none whitespace-nowrap">${cur}</span>`).join('') 
-                                  + `</div>`
-                                : '';
-                            
-                            let metaTags = `<div class="mt-1 flex flex-wrap justify-center gap-1">
-                                <span class="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1 py-0.5 rounded" title="Código">Cód: ${metaData.codigo}</span>
-                                <span class="text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1 py-0.5 rounded" title="Turma">T: ${metaData.turma}</span>
-                                <span class="text-[9px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1 py-0.5 rounded" title="Sala">S: ${metaData.sala}</span>
-                                <span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded" title="Vagas">👥 ${metaData.vagas}</span>
-                            </div>`;
+                                let cursosTags = parsed.cursos.length > 0 
+                                    ? `<div class="mt-1 flex flex-wrap justify-center gap-1">` + 
+                                      parsed.cursos.map(cur => `<span class="text-[9px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded leading-none whitespace-nowrap">${cur}</span>`).join('') 
+                                      + `</div>`
+                                    : '';
+                                
+                                let metaTags = `<div class="mt-1 flex flex-wrap justify-center gap-1">
+                                    <span class="text-[9px] font-bold text-slate-700 bg-slate-200/80 border border-slate-300 px-1.5 py-0.5 rounded" title="Código">Cód: ${displayCode}</span>
+                                    <span class="text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1 py-0.5 rounded" title="Turma">T: ${metaData.turma}</span>
+                                    <span class="text-[9px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1 py-0.5 rounded" title="Sala">S: ${metaData.sala}</span>
+                                    <span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded" title="Vagas">👥 ${metaData.vagas}</span>
+                                </div>`;
 
-                            if (isPrintMode) {
-                                let cursosPrint = parsed.cursos.length > 0 ? `<br><span style="font-size:8px; color:#059669;">[${parsed.cursos.join(', ')}]</span>` : '';
-                                content = `<strong>${parsed.disc}</strong><br><span style="color:#4f46e5;">${parsed.profId ? profName : 'Sem Professor'}</span><br><span style="font-size:8px; color:#6b7280;">Cód: ${metaData.codigo} | T: ${metaData.turma} | Sala: ${metaData.sala} | Vagas: ${metaData.vagas}</span>${cursosPrint}`;
-                            } else {
-                                content = `
-                                    <div class="font-bold text-slate-800 text-sm leading-tight">${parsed.disc}</div>
-                                    <div class="text-xs text-indigo-600 font-semibold mt-1 bg-indigo-50 inline-block px-1.5 py-0.5 rounded border border-indigo-100 truncate max-w-full" title="${profName}">
-                                        ${parsed.profId ? profName : 'Sem Professor'}
-                                    </div>
-                                    ${metaTags}
-                                    ${cursosTags}
-                                `;
-                            }
+                                if (isPrintMode) {
+                                    let cursosPrint = parsed.cursos.length > 0 ? `<br><span style="font-size:8px; color:#059669;">[${parsed.cursos.join(', ')}]</span>` : '';
+                                    let divider = idx > 0 ? `<hr style="margin: 4px 0; border-top: 1px dashed #999;">` : '';
+                                    return `${divider}<strong>${parsed.disc}</strong><br><span style="color:#4f46e5;">${parsed.profId ? profName : 'Sem Professor'}</span><br><span style="font-size:8px; color:#6b7280;">Cód: ${displayCode} | T: ${metaData.turma} | Sala: ${metaData.sala} | Vagas: ${metaData.vagas}</span>${cursosPrint}`;
+                                } else {
+                                    let cardStyle = entries.length > 1 
+                                        ? 'p-2 rounded-lg bg-white border border-slate-200 shadow-xs mb-1.5 last:mb-0' 
+                                        : '';
+                                    return `
+                                        <div class="${cardStyle}">
+                                            <div class="font-bold text-slate-800 text-sm leading-tight">${parsed.disc}</div>
+                                            <div class="text-xs text-indigo-600 font-semibold mt-1 bg-indigo-50 inline-block px-1.5 py-0.5 rounded border border-indigo-100 truncate max-w-full" title="${profName}">
+                                                ${parsed.profId ? profName : 'Sem Professor'}
+                                            </div>
+                                            ${metaTags}
+                                            ${cursosTags}
+                                        </div>
+                                    `;
+                                }
+                            }).join('');
                         } else {
                             content = isPrintMode ? '' : `<div class="text-slate-300 text-xs font-medium italic">—</div>`;
                         }
 
                         if (isInteractive && !isPrintMode) {
-                            html += `<td onclick="openEditModal('${sheetName}', ${r}, ${c}, '${dayStr}', '${timeStr}')" class="p-3 align-top border-r border-slate-200 grid-cell text-center relative overflow-hidden">${content}</td>`;
+                            html += `<td onclick="openEditModal('${sheetName}', ${r}, ${c}, '${dayStr}', '${timeStr}')" class="p-2.5 align-top border-r border-slate-200 grid-cell text-center relative overflow-hidden">${content}</td>`;
                         } else {
-                            html += isPrintMode ? `<td>${content}</td>` : `<td class="p-3 align-top border-r border-slate-200 text-center">${content}</td>`;
+                            html += isPrintMode ? `<td>${content}</td>` : `<td class="p-2.5 align-top border-r border-slate-200 text-center">${content}</td>`;
                         }
                     }
                 }
@@ -768,32 +893,33 @@
             const printContainer = document.getElementById('print-container');
             printContainer.innerHTML = '';
             
-            // Build all grids in print mode
             sheetListForPrint.forEach(sheetName => {
                 printContainer.innerHTML += buildGridHTML(sheetName, false, true);
             });
             
-            // Invoca a janela nativa de impressão do navegador
             window.print();
         }
 
-        // ================= VISÃO DO PROFESSOR =================
+        // ================= VISÃO DO PROFESSOR (POR COMPONENTE, POR CURSO E TOTAL) =================
         function renderProfessorView() {
             const profId = document.getElementById('prof-select').value;
             const container = document.getElementById('prof-view-container');
+            const totalBadgeBox = document.getElementById('prof-total-badge-box');
             const tbody = document.getElementById('prof-list-body');
+            const compTbody = document.getElementById('prof-comp-body');
             
             if (!profId) {
                 container.classList.add('hidden');
+                totalBadgeBox.classList.add('hidden');
                 return;
             }
             
-            const profName = dictProfessores[profId] || profId;
-            document.getElementById('prof-view-name').innerText = `Aulas Detalhadas`;
-            
-            let html = '';
-            let count = 0;
-            let uniqueClasses = {}; 
+            let scheduleHtml = '';
+            let slotCount = 0;
+
+            // Mapa de componentes únicos identificados por CÓDIGO (se existir) ou NOME NORMALIZADO + GRADE
+            // Estrutura: uniqueComponents[compUniqueKey] = { codigo, nome, ch, grades: Set, cursos: Set }
+            let uniqueComponents = {};
 
             for (let sheetName in gradesData) {
                 const data = gradesData[sheetName];
@@ -806,129 +932,267 @@
                     if (!row || !row[timeColIdx]) continue;
                     
                     for (let c = timeColIdx + 1; c < daysRow.length; c++) {
-                        const parsed = parseGradeCell(row[c]);
-                        if (parsed.profId === profId) {
-                            count++;
-                            const timeStr = row[timeColIdx];
-                            const dayStr = daysRow[c];
-                            const normDisc = normalizeDiscName(parsed.disc);
-                            const metaData = dictDisciplinasMeta[normDisc] || { codigo: 'N/D', turma: 'N/D', sala: 'N/D', vagas: 'N/D' };
-                            
-                            let cursosTags = parsed.cursos.length 
-                                ? parsed.cursos.map(cur => `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded text-xs mr-1 inline-block whitespace-nowrap mb-1">${cur}</span>`).join('') 
-                                : '<span class="text-slate-400 italic text-xs">Não especificado</span>';
+                        const entries = parseGradeCellList(row[c]);
+                        
+                        entries.forEach(parsed => {
+                            if (parsed.profId === profId) {
+                                slotCount++;
+                                const timeStr = row[timeColIdx];
+                                const dayStr = daysRow[c];
+                                const metaData = resolveDiscMetadata(parsed.discCode, parsed.disc);
+                                const displayCode = (parsed.discCode || metaData.codigo || 'N/D').toUpperCase();
+                                const normDisc = normalizeDiscName(parsed.disc);
 
-                            html += `
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800 border-r border-slate-100">${dayStr}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-700 border-r border-slate-100">${timeStr}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700 border-r border-slate-100">${parsed.disc}</td>
-                                    <td class="px-6 py-4 text-sm font-medium border-r border-slate-100">
-                                        <div class="text-slate-600">Cód: <span class="font-bold">${metaData.codigo}</span></div>
-                                        <div class="text-blue-700 mt-1">Turma: <span class="font-bold">${metaData.turma}</span></div>
-                                        <div class="text-purple-700 mt-1">Sala: <span class="font-bold">${metaData.sala}</span></div>
-                                        <div class="text-amber-700 mt-1">Vagas: <span class="font-bold">${metaData.vagas}</span></div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm border-r border-slate-100">${cursosTags}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">
-                                        <span class="bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200">${sheetName}</span>
-                                    </td>
-                                </tr>
-                            `;
+                                // Chave única do componente curricular:
+                                // Se possui código válido, diferencia pelo CÓDIGO (permite dois "Cálculo 1" com códigos distintos!)
+                                // Caso contrário, diferencia pelo nome normalizado + grade
+                                const compUniqueKey = (displayCode && displayCode !== 'N/D') 
+                                    ? `CODE::${displayCode}` 
+                                    : `NAME::${normDisc}::${sheetName}`;
 
-                            let cursosParaSomar = parsed.cursos.length > 0 ? parsed.cursos : ['Curso Não Especificado (Geral)'];
-                            cursosParaSomar.forEach(curso => {
-                                const classKey = `${normDisc}|${sheetName}|${curso}`;
-                                
-                                if (!uniqueClasses[classKey]) {
-                                    uniqueClasses[classKey] = {
-                                        rawName: parsed.disc,
-                                        normName: normDisc,
-                                        grade: sheetName,
-                                        curso: curso,
-                                        ch: metaData.ch
+                                if (!uniqueComponents[compUniqueKey]) {
+                                    uniqueComponents[compUniqueKey] = {
+                                        codigo: displayCode,
+                                        nome: parsed.disc,
+                                        ch: metaData.ch,
+                                        grades: new Set(),
+                                        cursos: new Set()
                                     };
                                 }
-                            });
-                        }
+                                uniqueComponents[compUniqueKey].grades.add(sheetName);
+                                if (parsed.cursos && parsed.cursos.length > 0) {
+                                    parsed.cursos.forEach(cur => uniqueComponents[compUniqueKey].cursos.add(cur));
+                                }
+
+                                let cursosTags = parsed.cursos.length 
+                                    ? parsed.cursos.map(cur => `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded text-xs mr-1 inline-block whitespace-nowrap mb-1">${cur}</span>`).join('') 
+                                    : '<span class="text-slate-400 italic text-xs">Não especificado</span>';
+
+                                scheduleHtml += `
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800 border-r border-slate-100">${dayStr}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-700 border-r border-slate-100">${timeStr}</td>
+                                        <td class="px-6 py-4 text-sm font-bold text-slate-700 border-r border-slate-100">
+                                            <span class="text-xs font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded mr-1.5">${displayCode}</span>
+                                            <span>${parsed.disc}</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-medium border-r border-slate-100">
+                                            <div class="text-blue-700">Turma: <span class="font-bold">${metaData.turma}</span></div>
+                                            <div class="text-purple-700 mt-0.5">Sala: <span class="font-bold">${metaData.sala}</span></div>
+                                            <div class="text-amber-700 mt-0.5">Vagas: <span class="font-bold">${metaData.vagas}</span></div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm border-r border-slate-100">${cursosTags}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">
+                                            <span class="bg-slate-100 px-2 py-1 rounded text-slate-600 border border-slate-200">${sheetName}</span>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        });
                     }
                 }
             }
 
-            if (count === 0) {
-                html = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">Nenhuma aula alocada para este professor nas grades carregadas.</td></tr>`;
-            }
+            // 1. Cálculo da Carga Horária Total do Docente e por Curso
+            let totalCHDocente = 0;
+            let cursoTotalsMap = {}; // { "Curso 1": { ch: 0, count: 0 } }
+            const componentsList = Object.values(uniqueComponents);
 
-            // Agrupamento para Resumo
-            let cursosGroups = {};
-            let totalCH = 0; 
-            let disciplinasContadasGlobal = new Set(); 
+            componentsList.forEach(comp => {
+                // Soma 1x na carga horária total do docente
+                totalCHDocente += comp.ch;
 
-            for (let key in uniqueClasses) {
-                const cls = uniqueClasses[key];
-                if (!cursosGroups[cls.curso]) cursosGroups[cls.curso] = [];
-                cursosGroups[cls.curso].push(cls);
+                // Atribui a carga horária aos cursos vinculados ao componente
+                const cursosDoComp = comp.cursos.size > 0 ? Array.from(comp.cursos) : ['Curso Não Especificado'];
+                cursosDoComp.forEach(curso => {
+                    if (!cursoTotalsMap[curso]) {
+                        cursoTotalsMap[curso] = { ch: 0, count: 0 };
+                    }
+                    cursoTotalsMap[curso].ch += comp.ch;
+                    cursoTotalsMap[curso].count += 1;
+                });
+            });
 
-                if (!disciplinasContadasGlobal.has(cls.normName)) {
-                    disciplinasContadasGlobal.add(cls.normName);
-                    totalCH += cls.ch;
-                }
-            }
+            // Renderiza os cards de Carga Horária por Curso
+            const courseGrid = document.getElementById('prof-course-summary-grid');
+            const cursosKeys = Object.keys(cursoTotalsMap).sort((a, b) => a.localeCompare(b));
 
-            let summaryHtml = '';
-            
-            if (Object.keys(cursosGroups).length === 0) {
-                summaryHtml = '<p class="text-sm text-slate-500 text-center py-4">Nenhuma disciplina alocada para exibir resumo.</p>';
+            if (cursosKeys.length === 0) {
+                courseGrid.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Nenhuma disciplina alocada para este docente.</p>';
             } else {
-                for (let curso in cursosGroups) {
-                    let cursoTotal = 0;
-                    let disciplinasContadasCurso = new Set();
-                    
-                    cursosGroups[curso].forEach(cls => {
-                        if (!disciplinasContadasCurso.has(cls.normName)) {
-                            disciplinasContadasCurso.add(cls.normName);
-                            cursoTotal += cls.ch;
-                        }
-                    });
-                    
-                    summaryHtml += `
-                        <div class="mb-6 last:mb-0">
-                            <h4 class="font-bold text-indigo-900 border-b-2 border-indigo-100 mb-3 pb-2 flex justify-between items-center">
-                                <span class="flex items-center"><svg class="w-4 h-4 mr-2 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"></path></svg>${curso}</span>
-                                <span class="text-indigo-700 bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-full text-sm font-black">${cursoTotal}h</span>
-                            </h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    `;
-                    
-                    cursosGroups[curso].forEach(cls => {
-                        summaryHtml += `
-                            <div class="flex flex-col justify-center p-4 bg-white border border-slate-200 shadow-sm rounded-xl hover:border-indigo-300 transition-colors">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">${cls.grade}</span>
-                                    <span class="font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded text-sm">${cls.ch > 0 ? cls.ch + 'h' : '--'}</span>
+                courseGrid.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">` + 
+                    cursosKeys.map(curso => {
+                        const info = cursoTotalsMap[curso];
+                        return `
+                            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-xs flex items-center justify-between hover:border-indigo-300 transition-colors">
+                                <div>
+                                    <p class="font-bold text-slate-800 text-base">${curso}</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">${info.count} componente(s) curricular(es)</p>
                                 </div>
-                                <p class="font-bold text-slate-800 text-sm leading-tight">${cls.rawName}</p>
-                                ${cls.ch === 0 ? '<p class="text-[10px] text-amber-600 mt-2 font-medium flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>CH não localizada</p>' : ''}
+                                <span class="text-lg font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-1.5 rounded-xl">
+                                    ${info.ch}h
+                                </span>
                             </div>
                         `;
-                    });
-                    summaryHtml += `</div></div>`;
-                }
+                    }).join('') + `</div>`;
             }
 
-            document.getElementById('prof-summary-list').innerHTML = summaryHtml;
-            document.getElementById('prof-summary-total').innerText = totalCH > 0 ? totalCH + 'h' : '0h';
+            // 2. Renderiza a tabela de Carga Horária por Componente Curricular
+            let compHtml = '';
+            if (componentsList.length === 0) {
+                compHtml = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">Nenhum componente curricular alocado para este docente.</td></tr>`;
+            } else {
+                componentsList.sort((a, b) => a.nome.localeCompare(b.nome) || a.codigo.localeCompare(b.codigo));
+                componentsList.forEach(comp => {
+                    const cursosArray = Array.from(comp.cursos);
+                    const cursosBadges = cursosArray.length > 0
+                        ? cursosArray.map(cur => `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-xs font-semibold mr-1 inline-block mb-1">${cur}</span>`).join('')
+                        : '<span class="text-slate-400 italic text-xs">Não especificado</span>';
 
-            tbody.innerHTML = html;
-            document.getElementById('prof-view-count').innerText = `${count} Aula(s)`;
+                    const gradesBadges = Array.from(comp.grades)
+                        .map(g => `<span class="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded text-xs font-medium mr-1 inline-block">${g}</span>`)
+                        .join('');
+
+                    compHtml += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-indigo-700 border-r border-slate-100">
+                                <span class="bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-md">${comp.codigo}</span>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-bold text-slate-800 border-r border-slate-100">
+                                ${comp.nome}
+                                ${comp.ch === 0 ? '<span class="block text-[11px] text-amber-600 font-medium mt-0.5">⚠ CH não localizada na planilha</span>' : ''}
+                            </td>
+                            <td class="px-6 py-4 text-sm border-r border-slate-100">${cursosBadges}</td>
+                            <td class="px-6 py-4 text-sm border-r border-slate-100">${gradesBadges}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-emerald-700">
+                                <span class="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">${comp.ch > 0 ? comp.ch + 'h' : '0h'}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (slotCount === 0) {
+                scheduleHtml = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">Nenhuma aula alocada para este professor nas grades carregadas.</td></tr>`;
+            }
+
+            compTbody.innerHTML = compHtml;
+            document.getElementById('prof-comp-count').innerText = `${componentsList.length} Componente(s)`;
+
+            document.getElementById('prof-summary-total').innerText = `${totalCHDocente}h`;
+            totalBadgeBox.classList.remove('hidden');
+
+            tbody.innerHTML = scheduleHtml;
+            document.getElementById('prof-view-count').innerText = `${slotCount} Horário(s)`;
             container.classList.remove('hidden');
         }
 
-        // ================= LÓGICA DE EDIÇÃO E DETECÇÃO DE CHOQUES =================
+        // ================= LÓGICA DE EDIÇÃO MÚLTIPLA E DETECÇÃO DE CHOQUES =================
+        function handleCatalogSelectChange(selectEl) {
+            const block = selectEl.closest('.entry-block');
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const codeVal = selectEl.value;
+            const nomeVal = selectedOption.getAttribute('data-nome') || '';
+
+            if (codeVal) {
+                block.querySelector('.entry-code').value = codeVal;
+                block.querySelector('.entry-disc').value = nomeVal.toUpperCase();
+            }
+        }
+
+        function addEntryBlock(entryData = { discCode: "", disc: "", profId: "", cursos: [] }) {
+            const listContainer = document.getElementById('edit-entries-list');
+            const index = listContainer.children.length + 1;
+
+            // Caso venha uma célula antiga sem discCode explícito, tenta inferir do catálogo pelo nome
+            let initialCode = (entryData.discCode || "").toUpperCase();
+            if (!initialCode && entryData.disc) {
+                const resolved = resolveDiscMetadata("", entryData.disc);
+                if (resolved.codigo && resolved.codigo !== 'N/D') {
+                    initialCode = resolved.codigo;
+                }
+            }
+
+            const block = document.createElement('div');
+            block.className = "entry-block p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative fade-in";
+
+            const cursosCheckboxesHTML = CURSOS_DISPONIVEIS.map(curso => {
+                const isChecked = entryData.cursos && entryData.cursos.includes(curso) ? 'checked' : '';
+                return `
+                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-200/60 p-1.5 rounded-lg transition bg-white border border-slate-200">
+                        <input type="checkbox" value="${curso}" ${isChecked} class="entry-curso-cb w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                        <span class="font-semibold text-slate-700 text-xs">${curso}</span>
+                    </label>
+                `;
+            }).join('');
+
+            block.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span class="text-xs font-black uppercase tracking-wider text-indigo-700 entry-title">Disciplina #${index}</span>
+                    <button type="button" onclick="removeEntryBlock(this)" class="text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Remover
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Preenchimento Rápido pelo Catálogo (Código + Disciplina)</label>
+                    <select onchange="handleCatalogSelectChange(this)" class="entry-catalog w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/40 font-semibold text-slate-700">
+                        ${getCatalogOptionsHTML(initialCode)}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div class="sm:col-span-4">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Código da Disciplina</label>
+                        <input type="text" value="${initialCode}" placeholder="Ex: ENE101" class="entry-code w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white uppercase font-bold text-indigo-800">
+                    </div>
+                    <div class="sm:col-span-8">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nome da Disciplina</label>
+                        <input type="text" value="${entryData.disc || ''}" placeholder="Ex: CÁLCULO I" class="entry-disc w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white uppercase font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Professor Responsável</label>
+                    <select class="entry-prof w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-medium">
+                        ${getSortedProfOptionsHTML(entryData.profId)}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Curso(s) Vinculado(s)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        ${cursosCheckboxesHTML}
+                    </div>
+                </div>
+            `;
+
+            listContainer.appendChild(block);
+            renumberEntryBlocks();
+        }
+
+        function removeEntryBlock(btn) {
+            const listContainer = document.getElementById('edit-entries-list');
+            btn.closest('.entry-block').remove();
+            if (listContainer.children.length === 0) {
+                addEntryBlock();
+            } else {
+                renumberEntryBlocks();
+            }
+        }
+
+        function renumberEntryBlocks() {
+            const blocks = document.querySelectorAll('#edit-entries-list .entry-block');
+            blocks.forEach((b, idx) => {
+                b.querySelector('.entry-title').innerText = `Disciplina #${idx + 1}`;
+            });
+        }
+
         function openEditModal(sheet, r, c, dayStr, timeStr) {
             const data = gradesData[sheet];
             const val = data.aoa[r][c] || '';
-            const parsed = parseGradeCell(val);
+            const entries = parseGradeCellList(val);
             
             document.getElementById('edit-sheet').value = sheet;
             document.getElementById('edit-row').value = r;
@@ -939,14 +1203,13 @@
             document.getElementById('edit-modal-title').innerText = `Editar: ${sheet}`;
             document.getElementById('edit-modal-subtitle').innerHTML = `<span class="font-bold">${dayStr}</span> &bull; ${timeStr}`;
             
-            document.getElementById('edit-disciplina').value = parsed.disc;
-            document.getElementById('edit-professor').value = parsed.profId; 
+            const listContainer = document.getElementById('edit-entries-list');
+            listContainer.innerHTML = '';
 
-            document.querySelectorAll('.curso-checkbox').forEach(cb => cb.checked = false);
-            if (parsed.cursos && parsed.cursos.length > 0) {
-                document.querySelectorAll('.curso-checkbox').forEach(cb => {
-                    if (parsed.cursos.includes(cb.value)) cb.checked = true;
-                });
+            if (entries.length > 0) {
+                entries.forEach(entry => addEntryBlock(entry));
+            } else {
+                addEntryBlock();
             }
 
             document.getElementById('edit-modal').classList.remove('hidden');
@@ -957,39 +1220,64 @@
         }
 
         function clearCell() {
-            document.getElementById('edit-disciplina').value = '';
-            document.getElementById('edit-professor').value = '';
-            document.querySelectorAll('.curso-checkbox').forEach(cb => cb.checked = false);
-            saveCellData();
+            const sheet = document.getElementById('edit-sheet').value;
+            const r = parseInt(document.getElementById('edit-row').value);
+            const c = parseInt(document.getElementById('edit-col').value);
+
+            gradesData[sheet].aoa[r][c] = "";
+            saveToLocalStorage();
+            closeEditModal();
+            renderAdminGrid();
+
+            if (!document.getElementById('view-professor').classList.contains('hidden')) {
+                renderProfessorView();
+            }
         }
 
-        function checkForClashes(targetProfId, targetDayStr, targetTimeStr, currentSheetName) {
-            if (!targetProfId) return false;
-
+        // Verifica choque tanto DENTRO da mesma célula quanto nas DEMAIS grades no mesmo dia e horário
+        function checkForClashesMultiple(entriesToSave, targetDayStr, targetTimeStr, currentSheetName) {
             const tDay = String(targetDayStr).trim().toUpperCase();
             const tTime = String(targetTimeStr).trim().toUpperCase();
 
-            for (let sheetName in gradesData) {
-                if (sheetName === currentSheetName) continue; 
-                
-                const data = gradesData[sheetName];
-                const aoa = data.aoa;
-                const daysRow = aoa[data.meta.dayRowIdx];
-                const timeCol = data.meta.timeColIdx;
+            // 1. Verifica choque interno (mesmo professor alocado 2x na mesma célula/horário)
+            const seenProfsInCell = new Set();
+            for (const entry of entriesToSave) {
+                if (!entry.profId) continue;
+                if (seenProfsInCell.has(entry.profId)) {
+                    const profName = dictProfessores[entry.profId] || entry.profId;
+                    return `O(a) professor(a) <b>${profName}</b> foi selecionado(a) mais de uma vez neste mesmo horário (${tDay} às ${targetTimeStr}). Um professor não pode ministrar duas disciplinas simultaneamente.`;
+                }
+                seenProfsInCell.add(entry.profId);
+            }
 
-                for (let r = data.meta.dayRowIdx + 1; r < aoa.length; r++) {
-                    const row = aoa[r];
-                    if (!row || !row[timeCol]) continue;
+            // 2. Verifica choque em outras grades/semestres no mesmo dia e horário
+            for (const entry of entriesToSave) {
+                const targetProfId = entry.profId;
+                if (!targetProfId) continue;
+
+                for (let sheetName in gradesData) {
+                    if (sheetName === currentSheetName) continue; 
                     
-                    const timeCellStr = String(row[timeCol]).trim().toUpperCase();
-                    if (timeCellStr === tTime) { 
-                        for (let c = timeCol + 1; c < daysRow.length; c++) {
-                            const dayCellStr = String(daysRow[c]).trim().toUpperCase();
-                            if (dayCellStr === tDay) {
-                                const parsed = parseGradeCell(row[c]);
-                                if (parsed.profId === targetProfId) {
-                                    const profName = dictProfessores[targetProfId] || targetProfId;
-                                    return `O(a) professor(a) <b>${profName}</b> já possui aula alocada na <b>${sheetName}</b> neste exato dia e horário (${tDay} às ${targetTimeStr}).`;
+                    const data = gradesData[sheetName];
+                    const aoa = data.aoa;
+                    const daysRow = aoa[data.meta.dayRowIdx];
+                    const timeCol = data.meta.timeColIdx;
+
+                    for (let r = data.meta.dayRowIdx + 1; r < aoa.length; r++) {
+                        const row = aoa[r];
+                        if (!row || !row[timeCol]) continue;
+                        
+                        const timeCellStr = String(row[timeCol]).trim().toUpperCase();
+                        if (timeCellStr === tTime) { 
+                            for (let c = timeCol + 1; c < daysRow.length; c++) {
+                                const dayCellStr = String(daysRow[c]).trim().toUpperCase();
+                                if (dayCellStr === tDay) {
+                                    const existingEntries = parseGradeCellList(row[c]);
+                                    const hasClash = existingEntries.some(ex => ex.profId === targetProfId);
+                                    if (hasClash) {
+                                        const profName = dictProfessores[targetProfId] || targetProfId;
+                                        return `O(a) professor(a) <b>${profName}</b> já possui aula alocada na <b>${sheetName}</b> neste exato dia e horário (${tDay} às ${targetTimeStr}).`;
+                                    }
                                 }
                             }
                         }
@@ -1006,18 +1294,28 @@
             const dayStr = document.getElementById('edit-day').value;
             const timeStr = document.getElementById('edit-time').value;
             
-            const newDisc = document.getElementById('edit-disciplina').value.toUpperCase();
-            const newProfId = document.getElementById('edit-professor').value;
-            const cursosSelecionados = Array.from(document.querySelectorAll('.curso-checkbox:checked')).map(cb => cb.value);
+            const blocks = document.querySelectorAll('#edit-entries-list .entry-block');
+            const entriesToSave = [];
 
-            const clashMsg = checkForClashes(newProfId, dayStr, timeStr, sheet);
+            blocks.forEach(block => {
+                const discCode = block.querySelector('.entry-code').value.toUpperCase().trim();
+                const disc = block.querySelector('.entry-disc').value.toUpperCase().trim();
+                const profId = block.querySelector('.entry-prof').value.trim();
+                const cursos = Array.from(block.querySelectorAll('.entry-curso-cb:checked')).map(cb => cb.value);
+
+                if (disc || profId || discCode) {
+                    entriesToSave.push({ discCode, disc, profId, cursos });
+                }
+            });
+
+            const clashMsg = checkForClashesMultiple(entriesToSave, dayStr, timeStr, sheet);
             
             if (clashMsg) {
                 showErrorModal(clashMsg);
                 return; 
             }
 
-            const formattedValue = formatGradeCell(newDisc, newProfId, cursosSelecionados);
+            const formattedValue = formatGradeCellList(entriesToSave);
             gradesData[sheet].aoa[r][c] = formattedValue;
             
             saveToLocalStorage(); 
@@ -1044,13 +1342,15 @@
             try {
                 const newWb = XLSX.utils.book_new();
                 
-                if (originalWorkbook.Sheets["PROFESSORES"]) {
-                    XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["PROFESSORES"], "PROFESSORES");
-                }
-                if (originalWorkbook.Sheets["DISCPLINAS"]) {
-                    XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCPLINAS"], "DISCPLINAS");
-                } else if (originalWorkbook.Sheets["DISCIPLINAS"]) {
-                    XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCIPLINAS"], "DISCIPLINAS");
+                if (originalWorkbook) {
+                    if (originalWorkbook.Sheets["PROFESSORES"]) {
+                        XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["PROFESSORES"], "PROFESSORES");
+                    }
+                    if (originalWorkbook.Sheets["DISCPLINAS"]) {
+                        XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCPLINAS"], "DISCPLINAS");
+                    } else if (originalWorkbook.Sheets["DISCIPLINAS"]) {
+                        XLSX.utils.book_append_sheet(newWb, originalWorkbook.Sheets["DISCIPLINAS"], "DISCIPLINAS");
+                    }
                 }
 
                 for (let sheetName in gradesData) {
